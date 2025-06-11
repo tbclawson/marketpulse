@@ -1,1 +1,39 @@
-# docker-compose configuration
+version: '3.8'
+
+services:
+  api:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - "8000:8000"
+
+  kafka:
+    image: bitnami/kafka:latest
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    ports:
+      - "9092:9092"
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - "2181:2181"
+
+  postgres:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
