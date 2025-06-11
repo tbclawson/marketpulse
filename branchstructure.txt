@@ -1,0 +1,10 @@
+| Branch Name                  | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `feature/api-connection`     | FastAPI service, config loading             |
+| `feature/ws-stream-capture`  | Finnhub WebSocket listener + Kafka producer |
+| `feature/kafka-processing`   | Kafka consumer, analytics, DB writer        |
+| `feature/postgres-schema`    | DB models, schema, and init scripts         |
+| `feature/frontend-dashboard` | Streamlit or React dashboard                |
+| `feature/docker-compose`     | Service orchestration for local dev         |
+| `feature/unit-tests`         | Add pytest test coverage                    |
+| `feature/alerts-engine`      | Volatility and anomaly alert logic          |
