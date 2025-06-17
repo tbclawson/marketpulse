@@ -1,4 +1,6 @@
-from processing.consumer import start_consumer
+import asyncio
+from processing.consumer import consume_and_store
 
 if __name__ == "__main__":
-    start_consumer('marketpulse.trades')
+    asyncio.run(consume_and_store('marketpulse.trades'))
+

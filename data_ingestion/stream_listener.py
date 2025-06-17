@@ -22,7 +22,9 @@ async def listen_to_trades(symbols: list[str]):
                 
                 # Log and produce to Kafka
                 print("Received:", parsed_msg)
-                send_trade_message('marketpulse.trades', parsed_msg)
+                if parsed_msg['type'] != 'ping':
+                    for trade in parsed_msg['data']:
+                        send_trade_message('marketpulse.trades', trade)
 
             except Exception as e:
                 print("WebSocket error:", e)

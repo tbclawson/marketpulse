@@ -1,10 +1,12 @@
 from kafka import KafkaConsumer
 import json
 import logging
+import asyncio
+from processing.storage import Storage
 
-# Set up logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 def start_consumer(topic: str):
     """
@@ -40,3 +42,50 @@ def start_consumer(topic: str):
     finally:
         consumer.close()
         logger.info("Consumer connection closed.")
+
+
+
+
+async def consume_and_store(topic: str):
+    # Initialize storage
+    storage = Storage()
+    await storage.connect()
+
+    # Set up Kafka consumer
+    consumer = KafkaConsumer(
+        topic,
+        bootstrap_servers=['localhost:9092'],  # or broker:29092 if inside Docker
+        auto_offset_reset='earliest',
+        enable_auto_commit=True,
+        value_deserializer=lambda m: json.loads(m.decode('utf-8')),
+        group_id='marketpulse-consumer-group'
+    )
+
+    logger.info(f"Consumer started for topic: {topic}")
+
+    try:
+        for message in consumer:
+            trade_data = message.value
+            logger.info(f"Received trade: {trade_data}")
+
+            for trade in trade_data.get("data", []):
+            # Example expected structure
+                record = {
+                    'symbol': trade.get('s'),
+                    'price': trade.get('p'),
+                    'volume': trade.get('v'),
+                    'ts': trade.get('t'),  # ensure your WS sends proper timestamp
+                    'conditions': trade.get('c'),
+                    'indicators': None
+                }
+
+                await storage.insert_trade(record)
+
+    except KeyboardInterrupt:
+        logger.info("Consumer interrupted by user.")
+    finally:
+        await storage.close()
+        consumer.close()
+        logger.info("Consumer and DB connections closed.")
+
+
