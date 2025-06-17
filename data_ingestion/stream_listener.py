@@ -2,6 +2,8 @@ import asyncio
 import websockets
 import json
 from api.config import settings
+from data_ingestion.producer import send_trade_message
+
 
 FINNHUB_WS_URL = f"wss://ws.finnhub.io?token={settings.finnhub_api_key}"
 
@@ -16,7 +18,13 @@ async def listen_to_trades(symbols: list[str]):
         while True:
             try:
                 msg = await ws.recv()
-                print(msg)  # Eventually publish to Kafka
+                parsed_msg = json.loads(msg)
+                
+                # Log and produce to Kafka
+                print("Received:", parsed_msg)
+                send_trade_message('marketpulse.trades', parsed_msg)
+
             except Exception as e:
                 print("WebSocket error:", e)
-                await asyncio.sleep(5)  # Reconnect delay
+                await asyncio.sleep(5)  # Backoff before reconnect
+                
