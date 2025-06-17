@@ -68,18 +68,20 @@ async def consume_and_store(topic: str):
             trade_data = message.value
             logger.info(f"Received trade: {trade_data}")
 
-            for trade in trade_data.get("data", []):
             # Example expected structure
-                record = {
-                    'symbol': trade.get('s'),
-                    'price': trade.get('p'),
-                    'volume': trade.get('v'),
-                    'ts': trade.get('t'),  # ensure your WS sends proper timestamp
-                    'conditions': trade.get('c'),
-                    'indicators': None
-                }
+            record = {
+                'symbol': trade_data.get('s'),
+                'price': trade_data.get('p'),
+                'volume': trade_data.get('v'),
+                'ts': trade_data.get('t'),  # ensure your WS sends proper timestamp
+                'conditions': trade_data.get('c'),
+                'indicators': None
+            }
 
+            try:
                 await storage.insert_trade(record)
+            except Exception as e:
+                logger.exception(f"Failed to insert trade: {e}")
 
     except KeyboardInterrupt:
         logger.info("Consumer interrupted by user.")
